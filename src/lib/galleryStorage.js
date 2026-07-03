@@ -1,3 +1,7 @@
+import { db } from './firebase';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+
+// Helper function oo file-ka u beddesha Base64 (Sidii hore uun)
 export function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -7,25 +11,61 @@ export function fileToBase64(file) {
   })
 }
 
-export function createGalleryItem({ title, imageName, image, id }) {
-  return {
-    id: id || Date.now().toString(), 
-    title: title,
-    imageName: imageName || 'No Name', 
-    image: image,
-    createdAt: new Date().toISOString()
+// 1. Inaad xog cusub ku kaydiso Firebase (Upload)
+export async function addGalleryItemToFirebase({ title, imageName, image }) {
+  try {
+    const docRef = await addDoc(collection(db, "gallery_items"), {
+      title: title,
+      imageName: imageName || 'No Name',
+      image: image, // Base64 string
+      createdAt: new Date().toISOString()
+    });
+    return { id: docRef.id };
+  } catch (e) {
+    console.error("Error adding document: ", e);
+    throw e;
   }
 }
 
-export function loadGalleryItems() {
-  if (typeof window === 'undefined') return []
-  const saved = localStorage.getItem('gallery_items')
-  return saved ? JSON.parse(saved) : []
+// 2. Inaad xogta ka soo aqriso Firebase (Load)
+export async function loadGalleryItemsFromFirebase() {
+  try {
+    const q = query(collection(db, "gallery_items"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    const items = [];
+    querySnapshot.forEach((doc) => {
+      items.push({ id: doc.id, ...doc.data() });
+    });
+    return items;
+  } catch (e) {
+    console.error("Error getting documents: ", e);
+    return [];
+  }
 }
 
-export function saveGalleryItems(items) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem('gallery_items', JSON.stringify(items))
+// 3. Inaad xogta ku update-garayso Firebase (Edit)
+export async function updateGalleryItemInFirebase(id, { title, imageName, image }) {
+  try {
+    const itemRef = doc(db, "gallery_items", id);
+    await updateDoc(itemRef, {
+      title: title,
+      imageName: imageName,
+      image: image
+    });
+  } catch (e) {
+    console.error("Error updating document: ", e);
+    throw e;
+  }
+}
+
+// 4. Inaad xogta ka tirtirto Firebase (Delete)
+export async function deleteGalleryItemFromFirebase(id) {
+  try {
+    await deleteDoc(doc(db, "gallery_items", id));
+  } catch (e) {
+    console.error("Error deleting document: ", e);
+    throw e;
+  }
 }
 
 export function sanitizeFilename(name) {

@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { createGalleryItem, fileToBase64 } from '@/lib/galleryStorage'
+import { fileToBase64 } from '@/lib/galleryStorage'
 
 export default function ImageUploadForm({ 
   onUpload, 
@@ -41,7 +41,7 @@ export default function ImageUploadForm({
     const base64 = await fileToBase64(file)
     setImageData(base64)
     setPreview(base64)
-    setImageName(file.name) // Halkan wuxuu si toos ah u qabanayaa magaca file-ka sawirka
+    setImageName(file.name) 
   }
 
   const resetForm = () => {
@@ -60,6 +60,9 @@ export default function ImageUploadForm({
     }
 
     setSubmitting(true)
+    setError('')
+    setSuccess('')
+    
     try {
       let payload;
       if (isEditing) {
@@ -70,14 +73,14 @@ export default function ImageUploadForm({
           image: imageData
         }
       } else {
-        payload = createGalleryItem({ 
+        payload = { 
           title: title.trim(),
           imageName: imageName.trim(), 
           image: imageData 
-        })
+        }
       }
       
-      onUpload(payload)
+      await onUpload(payload)
       setSuccess(isEditing ? 'Updated successfully!' : 'Uploaded successfully!')
       if (!isEditing) resetForm()
     } catch (err) {
@@ -99,8 +102,17 @@ export default function ImageUploadForm({
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full aspect-video border-2 border-dashed border-sky-300 rounded-md flex items-center justify-center bg-sky-50 overflow-hidden">
-          {preview ? <img src={preview} className="h-full w-full object-cover" alt="Preview" /> : <span>Select Image</span>}
+        {/* Waxaan ku daray bg-slate-950 iyo object-contain si uu u muujiyo sawirka oo buuxa inta lagu jiro doorashada */}
+        <button 
+          type="button" 
+          onClick={() => fileInputRef.current?.click()} 
+          className="w-full aspect-video border-2 border-dashed border-sky-300 rounded-md flex items-center justify-center bg-slate-950 overflow-hidden relative"
+        >
+          {preview ? (
+            <img src={preview} className="h-full w-full object-contain" alt="Preview" />
+          ) : (
+            <span className="text-sky-400 font-medium text-sm">Select Image</span>
+          )}
         </button>
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleImageChange} />
 
