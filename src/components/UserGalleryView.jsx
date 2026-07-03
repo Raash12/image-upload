@@ -19,7 +19,7 @@ export default function UserGalleryView({
     <div className="space-y-6 p-6 flex flex-col justify-between min-h-[60vh]">
       <div className="space-y-6">
         <div className="flex flex-col space-y-1.5">
-          <h2 className="text-3xl font-bold tracking-tight text-sky-950">Welcome to our Gallery</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-sky-950">Welcome to our List</h2>
           <p className="text-sm text-sky-500">Browse and download beautiful images from our collection.</p>
         </div>
 
